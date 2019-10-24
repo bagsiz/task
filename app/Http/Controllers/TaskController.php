@@ -3,10 +3,25 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTask;
+use App\Repositories\Interfaces\TaskRepositoryInterface;
 use Illuminate\Http\Request;
 
 class TaskController extends Controller
 {
+    /**
+     * @var TaskRepositoryInterface
+     */
+    private $taskRepository;
+
+    /**
+     * TaskController constructor.
+     * @param TaskRepositoryInterface $taskRepository
+     */
+    public function __construct(TaskRepositoryInterface $taskRepository)
+    {
+        $this->taskRepository = $taskRepository;
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -36,7 +51,7 @@ class TaskController extends Controller
     public function store(StoreTask $request)
     {
         $validated = $request->validated();
-
+        return $this->taskRepository->create($request);
     }
 
     /**
