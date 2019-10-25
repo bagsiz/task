@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreTask;
 use App\Repositories\Interfaces\TaskRepositoryInterface;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class TaskController extends Controller
 {
@@ -29,7 +30,7 @@ class TaskController extends Controller
      */
     public function index()
     {
-        //
+        return $this->taskRepository->index();
     }
 
     /**
@@ -62,7 +63,7 @@ class TaskController extends Controller
      */
     public function show($id)
     {
-        //
+        return $this->taskRepository->show($id);
     }
 
     /**
@@ -83,9 +84,10 @@ class TaskController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(StoreTask $request, $id)
     {
-        //
+        $validated = $request->validated();
+        return $this->taskRepository->update($request, $id);
     }
 
     /**
@@ -96,6 +98,6 @@ class TaskController extends Controller
      */
     public function destroy($id)
     {
-        //
+        return $this->taskRepository->destroy($id);
     }
 }

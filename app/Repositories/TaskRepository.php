@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Http\Resources\TaskResource;
+use App\Http\Resources\TaskResourceCollection;
 use App\Repositories\Interfaces\TaskRepositoryInterface;
 use App\Task;
 
@@ -10,16 +11,61 @@ use App\Task;
 class TaskRepository implements TaskRepositoryInterface
 {
     /**
-     * @param $data
-     * @return Tasks
+     * @param $request
+     * @return TaskResource
      */
-    public function create($data)
+    public function create($request)
     {
-        $task = new \App\Task();
-        $task->title = $data['title'];
-        $task->description = $data['description'];
-        $task->status = $data['status'];
-        $task->user_id = $data['user_id'];
+        $task = new Task();
+        $task->title = $request['title'];
+        $task->description = $request['description'];
+        $task->status = $request['status'];
+        $task->user_id = $request['user_id'];
+        $task->save();
+
+        return new TaskResource($task);
+    }
+
+    /**
+     * @param $id
+     * @return mixed
+     */
+    public function show($id)
+    {
+        return new TaskResource(Task::findOrFail($id));
+    }
+
+    /**
+     * @return mixed
+     */
+    public function index()
+    {
+        return new TaskResourceCollection(Task::all());
+    }
+
+    /**
+     * @param $id
+     * @return mixed
+     */
+    public function destroy($id)
+    {
+        $task = Task::findOrFail($id);
+        $task->delete();
+
+        return new TaskResource($task);
+    }
+
+    /**
+     * @param $request
+     * @param $id
+     * @return mixed
+     */
+    public function update($request, $id)
+    {
+        $task = Task::findOrFail($id);
+        $task->title = $request['title'];
+        $task->description = $request['description'];
+        $task->status = $request['status'];
         $task->save();
 
         return new TaskResource($task);
