@@ -1,0 +1,53 @@
+version: 2
+jobs:
+  build:
+    docker:
+      # Specify the version you desire here
+      - image: circleci/php:7.2-browsers
+      - image: circleci/mysql:5.7
+        environment:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_USER: root
+          MYSQL_ROOT_PASSWORD: ''
+          MYSQL_DATABASE: task
+
+    working_directory: ~/laravel
+
+    steps:
+      - checkout
+      - run:
+          name: Install PHP exts
+          command: |
+            sudo docker-php-ext-install zip
+            sudo docker-php-ext-install pdo_mysql
+      - run: sudo composer self-update
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "composer.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+
+      - run: composer install -n --prefer-dist
+      - run: cp .env.testing .env
+      - run: php artisan key:generate
+      - run: php artisan config:cache
+      - save_cache:
+          paths:
+            - ./vendor
+          key: v1-dependencies-{{ checksum "composer.json" }}
+
+      - run:
+          name: Setup Laravel stuffs
+          command: |
+            php artisan migrate --force
+      - run: ./vendor/bin/phpunit --filter a_task_has_an_assigned_user
+      - run: ./vendor/bin/phpunit --filter tasks_can_be_sorted_by_statuses
+      - run: ./vendor/bin/phpunit --filter an_authenticated_user_can_create_a_task
+      - run: ./vendor/bin/phpunit --filter a_task_requires_a_title
+      - run: ./vendor/bin/phpunit --filter an_authenticated_user_can_get_a_task
+      - run: ./vendor/bin/phpunit --filter an_authenticated_user_can_list_tasks
+      - run: ./vendor/bin/phpunit --filter an_authenticated_user_can_remove_a_task
+      - run: ./vendor/bin/phpunit --filter an_authenticated_user_can_update_a_task
+
